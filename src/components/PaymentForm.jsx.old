@@ -1,0 +1,580 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle, AlertCircle, Sparkles, Gift } from 'lucide-react';
+import JoyExplosion from './JoyExplosion';
+import GoldenParticles from './GoldenParticles';
+
+export default function PaymentForm({ onBackToLanding, stripePublicKey }) {
+  const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(0);
+  const [formData, setFormData] = useState({
+    childName: '',
+    childAge: '',
+    goodBehavior: '',
+    improveBehavior: '',
+    wish: '',
+    parentName: '',
+    parentEmail: '',
+    parentWhatsapp: '',
+  });
+
+  const [errors, setErrors] = useState({});
+  const [completedFields, setCompletedFields] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showJoy, setShowJoy] = useState(false);
+  const [showParticles, setShowParticles] = useState({});
+  const [ageTooltip, setAgeTooltip] = useState('');
+
+  const steps = [
+    {
+      title: 'Dados da Criança',
+      fields: ['childName', 'childAge', 'goodBehavior'],
+      icon: '👧',
+    },
+    {
+      title: 'Mais Sobre Seu Filho',
+      fields: ['improveBehavior', 'wish'],
+      icon: '🎁',
+    },
+    {
+      title: 'Seus Dados',
+      fields: ['parentName', 'parentEmail', 'parentWhatsapp'],
+      icon: '👨',
+    },
+    {
+      title: 'Pagamento',
+      fields: [],
+      icon: '💳',
+    },
+  ];
+
+  const visibleSteps = steps.slice(0, 3);
+
+  const allFields = [
+    {
+      id: 'childName',
+      label: '✨ Quem é a estrela do Natal este ano?',
+      type: 'text',
+      placeholder: 'Ex: O pequeno Arthur',
+      required: true,
+      step: 0,
+    },
+    {
+      id: 'childAge',
+      label: '🎂 Quantos anos de pura magia?',
+      type: 'number',
+      placeholder: 'Ex: 7',
+      required: true,
+      step: 0,
+      min: 3,
+      max: 18,
+    },
+    {
+      id: 'goodBehavior',
+      label: '📜 O que fez o Papai Noel sorrir de orgulho?',
+      type: 'textarea',
+      placeholder: 'Ex: Sempre ajuda em casa, é muito criativo(a)...',
+      required: true,
+      step: 0,
+    },
+    {
+      id: 'improveBehavior',
+      label: '🌱 O que podemos mencionar para melhorar? (Opcional)',
+      type: 'textarea',
+      placeholder: 'Ex: Comer mais vegetais, guardar os brinquedos...',
+      required: false,
+      step: 1,
+    },
+    {
+      id: 'wish',
+      label: '🎁 Qual é o desejo mais especial do coração?',
+      type: 'text',
+      placeholder: 'Ex: Uma bicicleta azul',
+      required: true,
+      step: 1,
+    },
+    {
+      id: 'parentName',
+      label: '👤 Como devemos chamá-lo(a)?',
+      type: 'text',
+      placeholder: 'Ex: João Silva',
+      required: true,
+      step: 2,
+    },
+    {
+      id: 'parentEmail',
+      label: '📧 Onde enviamos a confirmação?',
+      type: 'email',
+      placeholder: 'seu@email.com',
+      required: true,
+      step: 2,
+    },
+    {
+      id: 'parentWhatsapp',
+      label: '📱 WhatsApp para receber a magia',
+      type: 'tel',
+      placeholder: '(11) 99999-9999',
+      required: true,
+      step: 2,
+    },
+  ];
+
+  const handleFieldChange = (fieldId, value) => {
+    setFormData(prev => ({ ...prev, [fieldId]: value }));
+    setErrors(prev => ({ ...prev, [fieldId]: '' }));
+
+    if (value && value.toString().trim()) {
+      const wasEmpty = !completedFields[fieldId];
+      setCompletedFields(prev => ({ ...prev, [fieldId]: true }));
+      
+      if (wasEmpty) {
+        setShowParticles(prev => ({ ...prev, [fieldId]: true }));
+        setTimeout(() => setShowParticles(prev => ({ ...prev, [fieldId]: false })), 1000);
+      }
+    }
+
+    if (fieldId === 'childAge' && value) {
+      setAgeTooltip(`${value} anos? Que idade fantástica! 🌟`);
+      setTimeout(() => setAgeTooltip(''), 3000);
+    }
+  };
+
+  const validateCurrentStep = () => {
+    const fieldsInStep = allFields.filter(f => f.step === currentStep && f.required);
+    const newErrors = {};
+
+    fieldsInStep.forEach(field => {
+      if (!formData[field.id] || !formData[field.id].toString().trim()) {
+        newErrors[field.id] = `${field.label} é obrigatório`;
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNextStep = () => {
+    if (!validateCurrentStep()) return;
+
+    setShowJoy(true);
+    setTimeout(() => {
+      setShowJoy(false);
+      // Se estiver na última etapa visível (Seus Dados), vá direto para pagamento
+      setCurrentStep(prev => (prev === 2 ? 3 : prev + 1));
+    }, 800);
+  };
+
+  const handlePrevStep = () => {
+    setCurrentStep(prev => prev - 1);
+  };
+
+  const handleBackClick = () => {
+    if (onBackToLanding) {
+      onBackToLanding();
+    }
+    setTimeout(() => navigate('/'), 600);
+  };
+
+  const handleSubmit = async () => {
+    if (!validateCurrentStep()) return;
+
+    setIsSubmitting(true);
+
+    try {
+      // Redirecionar para Stripe
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        // Ambiente de desenvolvimento sem backend: seguir para sucesso
+        navigate('/success');
+      }
+    } catch (error) {
+      console.error('Erro ao processar pagamento:', error);
+      // Em desenvolvimento, segue para fluxo de sucesso para não travar UX
+      navigate('/success');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const currentStepSafeIndex = Math.min(currentStep, visibleSteps.length - 1);
+  const stepsFieldsCount = steps[currentStep].fields.length;
+  const stepsFieldsCompleted = steps[currentStep].fields.filter(f => completedFields[f]).length;
+  const baseProgress = 25;
+  const stepProgress = stepsFieldsCount ? baseProgress + ((stepsFieldsCompleted / stepsFieldsCount) * (100 - baseProgress)) : baseProgress;
+
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: 'easeOut' },
+    },
+  };
+
+  const fieldVariants = {
+    hidden: { opacity: 0, x: 20 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.4 },
+    },
+  };
+
+  return (
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="min-h-screen py-6 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
+      style={{
+        background: 'linear-gradient(135deg, #0a4d3c 0%, #1a2f4d 50%, #0d1b2a 100%)',
+      }}
+    >
+      {/* Floating golden bokeh lights */}
+      <div className="absolute inset-0 pointer-events-none">
+        <motion.div
+          animate={{ y: [0, -30, 0], opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute top-20 left-10 w-32 h-32 rounded-full bg-yellow-500/20 blur-3xl"
+        />
+        <motion.div
+          animate={{ y: [0, 40, 0], opacity: [0.2, 0.5, 0.2] }}
+          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+          className="absolute top-40 right-20 w-40 h-40 rounded-full bg-amber-400/15 blur-3xl"
+        />
+        <motion.div
+          animate={{ y: [0, -20, 0], opacity: [0.4, 0.7, 0.4] }}
+          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: 4 }}
+          className="absolute bottom-32 left-1/3 w-24 h-24 rounded-full bg-yellow-300/25 blur-2xl"
+        />
+      </div>
+      <JoyExplosion trigger={showJoy} onComplete={() => {}} />
+
+      <div className="max-w-2xl mx-auto relative z-10">
+        {/* Compact Magical Navigation Bar */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 flex items-center justify-between px-4 py-3 bg-white/5 backdrop-blur-xl rounded-full border border-yellow-500/30"
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-xl">✨</span>
+            <span className="text-sm font-semibold text-yellow-300">Fábrica de Sonhos</span>
+          </div>
+          <span className="text-xs text-yellow-200/60">Etapa {currentStepSafeIndex + 1}/3</span>
+        </motion.div>
+
+        {/* Elegant Integrated Progress Bar */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mb-8"
+        >
+          <div className="flex justify-between items-center mb-3">
+            <span className="text-yellow-400 font-bold text-sm">Você já começou! ✨</span>
+            <span className="text-yellow-200/70 text-sm font-semibold">{Math.round(stepProgress)}%</span>
+          </div>
+          
+          {/* Progress bar with pulsing golden glow */}
+          <div className="relative h-3 bg-black/30 rounded-full overflow-hidden border border-yellow-500/40">
+            <motion.div
+              initial={{ width: `${baseProgress}%` }}
+              animate={{ 
+                width: `${stepProgress}%`,
+                boxShadow: [
+                  '0 0 10px rgba(255, 215, 0, 0.5)',
+                  '0 0 25px rgba(255, 215, 0, 0.8)',
+                  '0 0 10px rgba(255, 215, 0, 0.5)',
+                ],
+              }}
+              transition={{ 
+                width: { duration: 0.5 },
+                boxShadow: { duration: 2, repeat: Infinity },
+              }}
+              className="h-full bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-500 relative"
+            >
+              <motion.div
+                animate={{ x: ['-100%', '100%'] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-white/50 to-transparent"
+              />
+            </motion.div>
+          </div>
+
+          {/* Elegant integrated step dots */}
+          <div className="flex justify-center gap-3 mt-4">
+            {visibleSteps.map((step, i) => (
+              <motion.div
+                key={i}
+                animate={{
+                  scale: i === currentStepSafeIndex ? [1, 1.2, 1] : 1,
+                  opacity: i <= currentStepSafeIndex ? 1 : 0.3,
+                }}
+                transition={{ duration: 0.5, scale: { duration: 1, repeat: Infinity } }}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold ${
+                  i === currentStepSafeIndex
+                    ? 'bg-yellow-500/30 text-yellow-200 border border-yellow-400/50'
+                    : i < currentStepSafeIndex
+                    ? 'bg-green-500/20 text-green-300'
+                    : 'bg-white/5 text-white/30'
+                }`}
+              >
+                <span>{step.icon}</span>
+                {i === currentStepSafeIndex && <span className="hidden sm:inline">{step.title}</span>}
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Form Container */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStep}
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit={{ opacity: 0, y: -20 }}
+            className="bg-noel-glass backdrop-blur-xl rounded-2xl p-8 border border-noel-cyan/20"
+          >
+            {/* Campos do Step Atual */}
+            {currentStep < 3 && (
+              <div className="space-y-6">
+                {allFields
+                  .filter(field => field.step === currentStep)
+                  .map((field, idx) => (
+                    <motion.div key={field.id} variants={fieldVariants} className="relative">
+                      <label className="block text-noel-cyan font-semibold mb-3 flex items-center justify-between">
+                        <span className="text-lg">{field.label}</span>
+                        {completedFields[field.id] && (
+                          <motion.div
+                            initial={{ scale: 0, rotate: -180 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{ type: 'spring', stiffness: 200 }}
+                          >
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                            >
+                              ⭐
+                            </motion.div>
+                          </motion.div>
+                        )}
+                      </label>
+                      <GoldenParticles trigger={showParticles[field.id]} />
+
+                      {field.type === 'textarea' ? (
+                        <motion.textarea
+                          whileFocus={{ 
+                            scale: 1.01, 
+                            boxShadow: '0 0 0px rgba(255, 215, 0, 0), 0 0 40px rgba(255, 215, 0, 0.6), inset 0 0 20px rgba(255, 215, 0, 0.1)'
+                          }}
+                          value={formData[field.id]}
+                          onChange={e => handleFieldChange(field.id, e.target.value)}
+                          placeholder={field.placeholder}
+                          rows={3}
+                          className={`w-full px-5 py-4 bg-white/5 backdrop-blur-2xl border-2 rounded-2xl focus:outline-none transition-all duration-300 text-white text-base placeholder-white/40 resize-none ${
+                            errors[field.id]
+                              ? 'border-red-500/50'
+                              : 'border-yellow-500/40 focus:border-yellow-400'
+                          }`}
+                          style={{ 
+                            boxShadow: errors[field.id] ? 'none' : '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                          }}
+                        />
+                      ) : (
+                        <div className="relative">
+                          <motion.input
+                            whileFocus={{ 
+                              scale: 1.01,
+                              boxShadow: '0 0 0px rgba(255, 215, 0, 0), 0 0 40px rgba(255, 215, 0, 0.6), inset 0 0 20px rgba(255, 215, 0, 0.1)'
+                            }}
+                            type={field.type}
+                            value={formData[field.id]}
+                            onChange={e => handleFieldChange(field.id, e.target.value)}
+                            placeholder={field.placeholder}
+                            min={field.min}
+                            max={field.max}
+                            className={`w-full px-5 py-4 bg-white/5 backdrop-blur-2xl border-2 rounded-2xl focus:outline-none transition-all duration-300 text-white text-base placeholder-white/40 ${
+                              errors[field.id]
+                                ? 'border-red-500/50'
+                                : 'border-yellow-500/40 focus:border-yellow-400'
+                            }`}
+                            style={{ 
+                              boxShadow: errors[field.id] ? 'none' : '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                            }}
+                          />
+                          {field.id === 'childAge' && ageTooltip && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -10, scale: 0.9 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0 }}
+                              className="absolute -top-14 left-0 bg-gradient-to-r from-yellow-400 to-amber-500 text-black px-5 py-3 rounded-2xl text-sm font-bold shadow-2xl border-2 border-yellow-300"
+                              style={{ boxShadow: '0 10px 40px rgba(255, 215, 0, 0.5)' }}
+                            >
+                              {ageTooltip}
+                              <div className="absolute -bottom-2 left-6 w-4 h-4 bg-yellow-400 transform rotate-45" />
+                            </motion.div>
+                          )}
+                        </div>
+                      )}
+
+                      {errors[field.id] && (
+                        <motion.p
+                          initial={{ opacity: 0, y: -5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-noel-red text-sm mt-2 flex items-center gap-1"
+                        >
+                          <AlertCircle className="w-4 h-4" />
+                          {errors[field.id]}
+                        </motion.p>
+                      )}
+                    </motion.div>
+                  ))}
+              </div>
+            )}
+
+            {/* Payment Step */}
+            {currentStep === 3 && (
+              <motion.div variants={fieldVariants} className="space-y-6">
+                <div className="bg-noel-darker/50 rounded-lg p-6 border border-noel-gold/30">
+                  <h3 className="text-lg font-bold text-noel-gold mb-4">Resumo do Pedido</h3>
+                  <div className="space-y-3 text-noel-cyan/80 text-sm mb-6">
+                    <div className="flex justify-between">
+                      <span>Nome da criança:</span>
+                      <span className="font-semibold text-noel-cyan">{formData.childName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Idade:</span>
+                      <span className="font-semibold text-noel-cyan">{formData.childAge} anos</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Presente desejado:</span>
+                      <span className="font-semibold text-noel-cyan">{formData.wish}</span>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-noel-cyan/20 pt-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-lg font-bold text-white">Total:</span>
+                      <span className="text-3xl font-bold bg-gradient-to-r from-noel-gold to-noel-cyan bg-clip-text text-transparent">
+                        R$ 19,90
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.05, boxShadow: '0 0 40px rgba(255, 7, 58, 0.7)' }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="w-full py-4 bg-noel-red text-white font-bold text-lg rounded-lg hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity }}
+                      >
+                        ⚙️
+                      </motion.div>
+                      Processando...
+                    </>
+                  ) : (
+                    <>
+                      <Gift className="w-5 h-5" />
+                      Receber Vídeo por R$ 19,90
+                    </>
+                  )}
+                </motion.button>
+
+                <p className="text-center text-xs text-noel-cyan/60">
+                  🔒 Pagamento seguro via Stripe • Entrega em 5 minutos por WhatsApp
+                </p>
+              </motion.div>
+            )}
+
+            {/* Single Irresistible Magic Button */}
+            <div className="mt-10">
+              {currentStep < 3 && (
+                <motion.button
+                  whileHover={stepProgress === 100 ? { scale: 1.03, y: -2 } : {}}
+                  whileTap={stepProgress === 100 ? { scale: 0.97 } : {}}
+                  animate={stepProgress === 100 ? {
+                    boxShadow: [
+                      '0 10px 40px rgba(255, 215, 0, 0.4), 0 0 0px rgba(255, 215, 0, 0)',
+                      '0 10px 60px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.8)',
+                      '0 10px 40px rgba(255, 215, 0, 0.4), 0 0 0px rgba(255, 215, 0, 0)',
+                    ],
+                  } : {}}
+                  transition={stepProgress === 100 ? { duration: 2, repeat: Infinity } : {}}
+                  onClick={handleNextStep}
+                  disabled={stepProgress < 100}
+                  className={`w-full py-5 rounded-2xl font-bold text-xl transition relative overflow-hidden ${
+                    stepProgress === 100
+                      ? 'bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-black cursor-pointer shadow-2xl'
+                      : 'bg-white/10 text-white/30 cursor-not-allowed'
+                  }`}
+                >
+                  {stepProgress === 100 && (
+                    <>
+                      <motion.div
+                        animate={{ x: ['-200%', '200%'] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                        className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-white/60 to-transparent"
+                      />
+                      <motion.div
+                        animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                        className="absolute inset-0 bg-yellow-300/20"
+                      />
+                    </>
+                  )}
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    {currentStep === 2 ? (
+                      <>
+                        <Sparkles className="w-6 h-6" />
+                        CRIAR A MAGIA AGORA
+                        <Sparkles className="w-6 h-6" />
+                      </>
+                    ) : (
+                      stepProgress === 100 ? (
+                        <>
+                          <span>CONTINUAR A JORNADA</span>
+                          <span className="text-2xl">→</span>
+                        </>
+                      ) : (
+                        `Complete para continuar (${Math.round(stepProgress)}%)`
+                      )
+                    )}
+                  </span>
+                </motion.button>
+              )}
+              
+              {/* Small back link only if not first step */}
+              {currentStep > 0 && currentStep < 3 && (
+                <motion.button
+                  whileHover={{ opacity: 1 }}
+                  onClick={handlePrevStep}
+                  className="w-full mt-4 py-2 text-sm text-yellow-300/50 hover:text-yellow-300 transition"
+                >
+                  ← Voltar
+                </motion.button>
+              )}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  );
+}

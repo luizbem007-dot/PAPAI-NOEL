@@ -1,0 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  background: linear-gradient(135deg, #020010 0%, #11001F 100%);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+@layer utilities {
+  .backdrop-blur-xl {
+    backdrop-filter: blur(20px);
+  }
+
+  .spin-slow {
+    animation: spin 20s linear infinite;
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% {
+      box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+    }
+  }
+}
+
+/* Suavizar transições globais */
+@layer base {
+  button, input, textarea, select {
+    transition-property: border-color, background-color, box-shadow, color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+}
