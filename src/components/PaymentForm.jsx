@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, AlertCircle, Sparkles, Gift } from 'lucide-react';
+import { CheckCircle, AlertCircle, Sparkles } from 'lucide-react';
 import JoyExplosion from './JoyExplosion';
 import GoldenParticles from './GoldenParticles';
 
@@ -43,14 +43,7 @@ export default function PaymentForm({ onBackToLanding }) {
       fields: ['parentName', 'parentEmail', 'parentWhatsapp'],
       icon: '👨',
     },
-    {
-      title: 'Pagamento',
-      fields: [],
-      icon: '💳',
-    },
   ];
-
-  const visibleSteps = steps.slice(0, 3);
 
   const allFields = [
     {
@@ -161,8 +154,7 @@ export default function PaymentForm({ onBackToLanding }) {
     setShowJoy(true);
     setTimeout(() => {
       setShowJoy(false);
-      // Se estiver na última etapa visível (Seus Dados), vá direto para pagamento
-      setCurrentStep(prev => (prev === 2 ? 3 : prev + 1));
+      setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
     }, 800);
   };
 
@@ -177,34 +169,32 @@ export default function PaymentForm({ onBackToLanding }) {
     setTimeout(() => navigate('/'), 600);
   };
 
-  const handleSubmit = async () => {
+  const handleFinalSubmit = async () => {
     if (!validateCurrentStep()) return;
 
     setIsSubmitting(true);
 
-    try {
-      // TODO: Integrar link de pagamento do Checkout Guru
-      // Por enquanto, salvar dados e redirecionar
-      const PAYMENT_LINK = 'https://checkout.guru/link-aqui'; // SUBSTITUIR com link real
-      
-      // Salvar dados no localStorage para recuperar após pagamento
-      localStorage.setItem('natal_order', JSON.stringify({
-        ...formData,
-        timestamp: new Date().toISOString()
-      }));
+    const checkoutUrl = 'https://go.papainoeloficial.shop/pay/mensagem-do-papai-noel';
+    const emailParam = formData.parentEmail ? `?email=${encodeURIComponent(formData.parentEmail)}` : '';
 
-      // Redirecionar para o link de pagamento
-      window.location.href = PAYMENT_LINK;
+    try {
+      await fetch('https://webhook.fiqon.app/webhook/019b328c-2f54-71dd-9f0c-9953ce65ce81/16e46e3a-a56e-4e05-b240-cf5fcb8c97f8', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          data_pedido: new Date().toISOString(),
+          status: 'Aguardando Pagamento',
+        }),
+      });
     } catch (error) {
-      console.error('Erro ao processar pagamento:', error);
-      // Em desenvolvimento, segue para fluxo de sucesso para não travar UX
-      navigate('/success');
+      console.error('Erro ao enviar webhook (ignorado para não travar venda):', error);
     } finally {
-      setIsSubmitting(false);
+      window.location.href = `${checkoutUrl}${emailParam}`;
     }
   };
 
-  const currentStepSafeIndex = Math.min(currentStep, visibleSteps.length - 1);
+  const currentStepSafeIndex = Math.min(currentStep, steps.length - 1);
   const stepsFieldsCount = steps[currentStep].fields.length;
   const stepsFieldsCompleted = steps[currentStep].fields.filter(f => completedFields[f]).length;
   const baseProgress = 90;
@@ -265,7 +255,7 @@ export default function PaymentForm({ onBackToLanding }) {
             </motion.span>
             <span className="text-sm font-bold bg-gradient-to-r from-yellow-400 via-yellow-300 to-orange-400 bg-clip-text text-transparent">Fábrica de Sonhos</span>
           </div>
-          <span className="text-xs text-yellow-200/70">Etapa {currentStepSafeIndex + 1}/3</span>
+          <span className="text-xs text-yellow-200/70">Etapa {currentStepSafeIndex + 1}/{steps.length}</span>
         </motion.div>
 
         {/* Elegant Integrated Progress Bar */}
@@ -307,7 +297,7 @@ export default function PaymentForm({ onBackToLanding }) {
 
           {/* Elegant integrated step dots */}
           <div className="flex justify-center gap-3 mt-4">
-            {visibleSteps.map((step, i) => (
+            {steps.map((step, i) => (
               <motion.div
                 key={i}
                 animate={{
@@ -448,124 +438,37 @@ export default function PaymentForm({ onBackToLanding }) {
               </div>
             )}
 
-            {/* Payment Step */}
-            {currentStep === 3 && (
-              <motion.div variants={fieldVariants} className="space-y-8">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-[#2a0a0a] rounded-3xl p-8 border border-[#FFD700]/20 shadow-md"
-                  style={{ boxShadow: 'none' }}
-                >
-                  <h3 className="text-2xl font-bold bg-gradient-to-r from-yellow-300 to-amber-300 bg-clip-text text-transparent mb-6">✨ Resumo Mágico do Pedido</h3>
-                  <div className="space-y-4 text-white/90 text-base mb-8">
-                    <motion.div 
-                      className="flex justify-between items-center pb-3 border-b border-yellow-400/30"
-                      whileHover={{ x: 5 }}
-                    >
-                      <span className="text-yellow-200">🎅 Nome da criança:</span>
-                      <span className="font-bold text-lg text-yellow-100">{formData.childName}</span>
-                    </motion.div>
-                    <motion.div 
-                      className="flex justify-between items-center pb-3 border-b border-yellow-400/30"
-                      whileHover={{ x: 5 }}
-                    >
-                      <span className="text-yellow-200">🎂 Idade:</span>
-                      <span className="font-bold text-lg text-yellow-100">{formData.childAge} anos</span>
-                    </motion.div>
-                    <motion.div 
-                      className="flex justify-between items-center pb-3 border-b border-yellow-400/30"
-                      whileHover={{ x: 5 }}
-                    >
-                      <span className="text-yellow-200">⭐ Paixões e hobbies:</span>
-                      <span className="font-bold text-lg text-yellow-100 text-right max-w-xs">{formData.wish}</span>
-                    </motion.div>
-                    <motion.div 
-                      className="flex justify-between items-center pb-3 border-b border-yellow-400/30"
-                      whileHover={{ x: 5 }}
-                    >
-                      <span className="text-yellow-200">📧 Seu e-mail:</span>
-                      <span className="font-bold text-lg text-yellow-100 text-right max-w-xs">{formData.parentEmail}</span>
-                    </motion.div>
-                  </div>
-
-                  <motion.div 
-                    className="border-t-2 border-yellow-400/40 pt-6 mt-6"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <div className="flex justify-between items-center">
-                      <span className="text-xl font-bold text-white">Investimento em Magia:</span>
-                      <motion.span 
-                        className="text-4xl font-black bg-gradient-to-r from-yellow-300 via-yellow-200 to-amber-300 bg-clip-text text-transparent"
-                        animate={{ scale: [1, 1.05, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      >
-                        R$ 29,90
-                      </motion.span>
-                    </div>
-                    <p className="text-sm text-yellow-200/60 mt-2">Vídeo personalizado entregue em 5 minutos por WhatsApp</p>
-                  </motion.div>
-                </motion.div>
-
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -4 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => { triggerCtaBoost(); handleSubmit(); }}
-                  disabled={isSubmitting}
-                  className="w-full py-6 bg-gradient-to-r from-[#ffd700] via-[#ffb347] to-[#ff8c00] text-black font-black text-lg rounded-2xl hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 border border-yellow-300/40 shadow-md"
-                  style={{ boxShadow: 'none' }}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity }}
-                      >
-                        ⚙️
-                      </motion.div>
-                      Criando Magia...
-                    </>
-                  ) : (
-                    <>
-                      <Gift className="w-6 h-6" />
-                      Criar Vídeo do Papai Noel
-                    </>
-                  )}
-                </motion.button>
-
-                <p className="text-center text-xs text-yellow-200/60">
-                  🔒 Pagamento 100% seguro | Entrega instantânea por WhatsApp
-                </p>
-              </motion.div>
-            )}
-
             {/* Single Irresistible Magic Button */}
             <div className="mt-10">
-              {currentStep < 3 && (
-                <motion.button
-                  whileHover={stepProgress === 100 ? { scale: 1.08, y: -4 } : {}}
-                  whileTap={stepProgress === 100 ? { scale: 0.95 } : {}}
-
-                  onClick={() => { triggerCtaBoost(); handleNextStep(); }}
-                  disabled={stepProgress < 100}
-                  className={`w-full py-7 px-6 rounded-3xl font-black text-lg sm:text-xl transition relative overflow-hidden border-3 ${
-                    stepProgress === 100
-                      ? 'bg-gradient-to-r from-[#ffd700] via-[#ffb347] to-[#ff8c00] text-black cursor-pointer shadow-md border-yellow-200/40'
-                      : 'bg-[#2a0a0a] text-white/40 cursor-not-allowed border-[#333]'
-                  }`}
-                >
-                  <span className="relative z-10 flex items-center justify-center gap-3 text-center leading-tight">
-                    {formData.childName?.trim()
-                      ? `✨ GERAR O VÍDEO EMOCIONANTE PARA ${formData.childName.trim().toUpperCase()}`
-                      : '✨ GERAR O VÍDEO EMOCIONANTE PARA MEU FILHO'}
-                  </span>
-                </motion.button>
-              )}
+              <motion.button
+                whileHover={stepProgress === 100 && !isSubmitting ? { scale: 1.08, y: -4 } : {}}
+                whileTap={stepProgress === 100 && !isSubmitting ? { scale: 0.95 } : {}}
+                onClick={() => {
+                  triggerCtaBoost();
+                  if (currentStep === steps.length - 1) {
+                    handleFinalSubmit();
+                  } else {
+                    handleNextStep();
+                  }
+                }}
+                disabled={stepProgress < 100 || isSubmitting}
+                className={`w-full py-7 px-6 rounded-3xl font-black text-lg sm:text-xl transition relative overflow-hidden border-3 ${
+                  stepProgress === 100 && !isSubmitting
+                    ? 'bg-gradient-to-r from-[#ffd700] via-[#ffb347] to-[#ff8c00] text-black cursor-pointer shadow-md border-yellow-200/40'
+                    : 'bg-[#2a0a0a] text-white/40 cursor-not-allowed border-[#333]'
+                }`}
+              >
+                <span className="relative z-10 flex items-center justify-center gap-3 text-center leading-tight">
+                  {isSubmitting
+                    ? 'Processando...'
+                    : formData.childName?.trim()
+                    ? `✨ GERAR O VÍDEO EMOCIONANTE PARA ${formData.childName.trim().toUpperCase()}`
+                    : '✨ GERAR O VÍDEO EMOCIONANTE PARA MEU FILHO'}
+                </span>
+              </motion.button>
               
               {/* Small back link only if not first step */}
-              {currentStep > 0 && currentStep < 3 && (
+              {currentStep > 0 && (
                 <motion.button
                   whileHover={{ opacity: 1, x: -2 }}
                   onClick={handlePrevStep}
