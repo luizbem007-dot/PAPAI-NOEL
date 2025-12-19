@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, Sparkles, CheckCircle } from 'lucide-react';
 import JoyExplosion from './JoyExplosion';
+import { saveLeadToSupabase } from '../lib/supabase';
 
 export default function PaymentForm({ onBackToLanding }) {
   const navigate = useNavigate();
@@ -86,82 +87,28 @@ export default function PaymentForm({ onBackToLanding }) {
     const checkoutUrl = 'https://go.papainoeloficial.shop/pay/mensagem-do-papai-noel';
     const emailParam = formData.parentEmail ? `?email=${encodeURIComponent(formData.parentEmail)}` : '';
 
-    // Preparar dados para enviar
-    const payloadData = {
-      childName: formData.childName.trim(),
-      childAge: String(formData.childAge).trim(),
-      goodBehavior: formData.goodBehavior.trim(),
-      wish: formData.wish.trim(),
-      parentName: formData.parentName.trim(),
-      parentEmail: formData.parentEmail.trim(),
-      parentWhatsapp: formData.parentWhatsapp.trim(),
-      data_pedido: new Date().toISOString(),
-      status: 'Aguardando Pagamento',
-      timestamp: new Date().getTime(),
-    };
-
-    console.log('✅ Iniciando envio para API própria (mais seguro)');
-    console.log('📋 Dados a enviar:', JSON.stringify(payloadData, null, 2));
+    console.log('✅ Iniciando salvamento de dados no Supabase');
 
     let dataSaved = false;
 
     try {
-      // Enviar para API própria no Vercel (muito mais confiável)
-      const response = await fetch('/api/save-lead', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payloadData),
-      });
-
-      const result = await response.json();
+      // Salvar dados no Supabase (seguro com RLS)
+      dataSaved = await saveLeadToSupabase(formData);
       
-      if (response.ok) {
-        dataSaved = true;
-        console.log('✅ Dados salvos com sucesso!');
-        console.log('📊 Lead ID:', result.lead_id);
+      if (dataSaved) {
+        console.log('✅ Dados salvos no Supabase com sucesso!');
       } else {
-        console.error('❌ Erro ao salvar:', result.error);
+        console.error('⚠️ Falha ao salvar no Supabase');
       }
     } catch (err) {
-      console.error('❌ Erro na API:', err.message);
-      
-      // Fallback 1: Tentar webhook FIQon direto
-      console.warn('⚠️ Tentando webhook FIQon como fallback...');
-      try {
-        const webhookUrl = 'https://webhook.fiqon.app/webhook/019b328c-2f54-71dd-9f0c-9953ce65ce81/16e46e3a-a56e-4e05-b240-cf5fcb8c97f8';
-        
-        const webhookResponse = await fetch(webhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payloadData),
-          mode: 'cors',
-        });
-
-        if (webhookResponse.ok) {
-          dataSaved = true;
-          console.log('✅ Webhook FIQon enviado com sucesso (fallback)');
-        }
-      } catch (webhookErr) {
-        console.error('❌ Webhook FIQon também falhou');
-        
-        // Fallback 2: sendBeacon como último recurso
-        if (navigator.sendBeacon) {
-          const webhookUrl = 'https://webhook.fiqon.app/webhook/019b328c-2f54-71dd-9f0c-9953ce65ce81/16e46e3a-a56e-4e05-b240-cf5fcb8c97f8';
-          const blob = new Blob([JSON.stringify(payloadData)], { type: 'application/json' });
-          const beaconSent = navigator.sendBeacon(webhookUrl, blob);
-          
-          if (beaconSent) {
-            console.log('✅ sendBeacon enviado (último fallback)');
-            dataSaved = true;
-          }
-        }
-      }
+      console.error('❌ Erro ao salvar:', err.message);
     }
 
-    // Redirect para checkout
+    // Sempre redireciona para checkout (dados já foram salvos ou tentativa foi feita)
     console.log('🔄 Redirecionando para checkout...');
-    console.log('📊 Status final:', dataSaved ? '✅ Dados salvos' : '⚠️ ATENÇÃO: Dados podem não ter sido salvos');
+    console.log('📊 Status final:', dataSaved ? '✅ Salvo no Supabase' : '⚠️ Verificar logs');
     window.location.href = `${checkoutUrl}${emailParam}`;
+  };
   };
 
   const currentFields = allFields.filter(f => f.step === currentStep);
