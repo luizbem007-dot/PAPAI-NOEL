@@ -100,62 +100,67 @@ export default function PaymentForm({ onBackToLanding }) {
       timestamp: new Date().getTime(),
     };
 
-    console.log('✅ Iniciando envio para webhook FIQon');
+    console.log('✅ Iniciando envio para API própria (mais seguro)');
     console.log('📋 Dados a enviar:', JSON.stringify(payloadData, null, 2));
 
-    const webhookUrl = 'https://webhook.fiqon.app/webhook/019b328c-2f54-71dd-9f0c-9953ce65ce81/16e46e3a-a56e-4e05-b240-cf5fcb8c97f8';
-    let webhookSuccess = false;
+    let dataSaved = false;
 
     try {
-      // Criar promessa de timeout (3 segundos máximo)
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Timeout')), 3000)
-      );
-
-      // Criar promessa de envio do webhook
-      const fetchPromise = fetch(webhookUrl, {
+      // Enviar para API própria no Vercel (muito mais confiável)
+      const response = await fetch('/api/save-lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payloadData),
-        mode: 'cors',
-        keepalive: true, // Mantém requisição mesmo após navegação
       });
 
-      // Usa Promise.race - quem responder primeiro ganha
-      const response = await Promise.race([fetchPromise, timeoutPromise]);
-
-      console.log('📡 Status do FIQon webhook:', response.status);
-      const responseText = await response.text();
-      console.log('📡 Resposta do FIQon webhook:', responseText);
-
+      const result = await response.json();
+      
       if (response.ok) {
-        webhookSuccess = true;
-        console.log('✅ Webhook enviado com sucesso!');
+        dataSaved = true;
+        console.log('✅ Dados salvos com sucesso!');
+        console.log('📊 Lead ID:', result.lead_id);
+      } else {
+        console.error('❌ Erro ao salvar:', result.error);
       }
     } catch (err) {
-      if (err.message === 'Timeout') {
-        console.warn('⏱️ Webhook demorou mais de 3s - usando fallback (sendBeacon)');
-      } else {
-        console.error('❌ Erro ao enviar webhook:', err.message);
-      }
-
-      // Fallback: usa sendBeacon (mais confiável para navegação)
-      if (navigator.sendBeacon) {
-        const blob = new Blob([JSON.stringify(payloadData)], { type: 'application/json' });
-        const beaconSent = navigator.sendBeacon(webhookUrl, blob);
+      console.error('❌ Erro na API:', err.message);
+      
+      // Fallback 1: Tentar webhook FIQon direto
+      console.warn('⚠️ Tentando webhook FIQon como fallback...');
+      try {
+        const webhookUrl = 'https://webhook.fiqon.app/webhook/019b328c-2f54-71dd-9f0c-9953ce65ce81/16e46e3a-a56e-4e05-b240-cf5fcb8c97f8';
         
-        if (beaconSent) {
-          console.log('✅ Webhook enviado via sendBeacon (fallback)');
-          webhookSuccess = true;
-        } else {
-          console.error('❌ sendBeacon falhou - dados podem não ter sido enviados');
+        const webhookResponse = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payloadData),
+          mode: 'cors',
+        });
+
+        if (webhookResponse.ok) {
+          dataSaved = true;
+          console.log('✅ Webhook FIQon enviado com sucesso (fallback)');
+        }
+      } catch (webhookErr) {
+        console.error('❌ Webhook FIQon também falhou');
+        
+        // Fallback 2: sendBeacon como último recurso
+        if (navigator.sendBeacon) {
+          const webhookUrl = 'https://webhook.fiqon.app/webhook/019b328c-2f54-71dd-9f0c-9953ce65ce81/16e46e3a-a56e-4e05-b240-cf5fcb8c97f8';
+          const blob = new Blob([JSON.stringify(payloadData)], { type: 'application/json' });
+          const beaconSent = navigator.sendBeacon(webhookUrl, blob);
+          
+          if (beaconSent) {
+            console.log('✅ sendBeacon enviado (último fallback)');
+            dataSaved = true;
+          }
         }
       }
     }
 
-    // Redirect para checkout (sempre redireciona, mesmo se webhook falhar)
+    // Redirect para checkout
     console.log('🔄 Redirecionando para checkout...');
-    console.log('📊 Status final do webhook:', webhookSuccess ? '✅ Enviado' : '⚠️ Pode não ter sido enviado');
+    console.log('📊 Status final:', dataSaved ? '✅ Dados salvos' : '⚠️ ATENÇÃO: Dados podem não ter sido salvos');
     window.location.href = `${checkoutUrl}${emailParam}`;
   };
 
