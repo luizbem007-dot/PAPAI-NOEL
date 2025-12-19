@@ -88,39 +88,55 @@ export default function PaymentForm({ onBackToLanding }) {
 
     // Preparar dados para enviar
     const payloadData = {
-      ...formData,
+      childName: formData.childName.trim(),
+      childAge: String(formData.childAge).trim(),
+      goodBehavior: formData.goodBehavior.trim(),
+      wish: formData.wish.trim(),
+      parentName: formData.parentName.trim(),
+      parentEmail: formData.parentEmail.trim(),
+      parentWhatsapp: formData.parentWhatsapp.trim(),
       data_pedido: new Date().toISOString(),
       status: 'Aguardando Pagamento',
       timestamp: new Date().getTime(),
     };
 
-    console.log('Enviando dados do formulário:', payloadData);
+    console.log('✅ Iniciando envio para webhook FIQon');
+    console.log('📋 Dados a enviar:', JSON.stringify(payloadData, null, 2));
+
+    let webhookSuccess = false;
 
     try {
-      // Enviar para Make.com
-      const makeResponse = await fetch('https://hook.us2.make.com/5fotcnn5gupa13xpt83z19o9uf1nj8hb', {
+      const response = await fetch('https://webhook.fiqon.app/webhook/019b328c-2f54-71dd-9f0c-9953ce65ce81/16e46e3a-a56e-4e05-b240-cf5fcb8c97f8', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payloadData),
+        mode: 'cors',
       });
-      console.log('Make.com response:', makeResponse.status);
+
+      console.log('📡 Status do FIQon webhook:', response.status);
+      const responseText = await response.text();
+      console.log('📡 Resposta do FIQon webhook:', responseText);
+
+      if (response.ok) {
+        webhookSuccess = true;
+        console.log('✅ Webhook enviado com sucesso!');
+      } else {
+        console.error('❌ Erro ao enviar webhook. Status:', response.status);
+      }
     } catch (err) {
-      console.error('Erro ao enviar para Make.com:', err);
+      console.error('❌ Erro ao enviar para webhook FIQon:', err);
+      console.error('Erro detalhado:', {
+        message: err.message,
+        stack: err.stack,
+        type: err.name,
+      });
     }
 
-    try {
-      // Enviar para FIQon webhook também
-      const fiqonResponse = await fetch('https://webhook.fiqon.app/webhook/019b328c-2f54-71dd-9f0c-9953ce65ce81/16e46e3a-a56e-4e05-b240-cf5fcb8c97f8', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payloadData),
-      });
-      console.log('FIQon response:', fiqonResponse.status);
-    } catch (err) {
-      console.error('Erro ao enviar para FIQon:', err);
-    }
+    // Aguardar um pouco para garantir que o envio foi processado
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Redirect para checkout após enviar ambos os webhooks
+    // Redirect para checkout
+    console.log('🔄 Redirecionando para checkout...');
     window.location.href = `${checkoutUrl}${emailParam}`;
   };
 
