@@ -5,11 +5,22 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('❌ Supabase credentials missing! Check .env.local');
-}
+let supabase = null;
+let supabaseAvailable = false;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+if (supabaseUrl && supabaseAnonKey) {
+  try {
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+    supabaseAvailable = true;
+    console.log('✅ Supabase conectado com sucesso');
+  } catch (err) {
+    console.error('❌ Erro ao conectar Supabase:', err);
+    supabaseAvailable = false;
+  }
+} else {
+  console.warn('⚠️ Variáveis de ambiente Supabase não configuradas');
+  supabaseAvailable = false;
+}
 
 /**
  * Salvar dados do formulário no Supabase
@@ -19,6 +30,12 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export async function saveLeadToSupabase(formData) {
   try {
     console.log('💾 Salvando dados no Supabase...');
+
+    // Se Supabase não está disponível, apenas log
+    if (!supabaseAvailable || !supabase) {
+      console.warn('⚠️ Supabase não disponível, dados não foram salvos');
+      return false;
+    }
 
     // Validar dados antes de enviar
     if (!formData.childName || !formData.parentEmail) {
@@ -35,7 +52,7 @@ export async function saveLeadToSupabase(formData) {
       parent_email: formData.parentEmail.trim().toLowerCase(),
       parent_whatsapp: formData.parentWhatsapp.trim().substring(0, 20),
       status: 'pending',
-      ip_address: null, // Será preenchido pelo Supabase via RLS
+      ip_address: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
