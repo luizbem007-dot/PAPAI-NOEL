@@ -103,15 +103,26 @@ export default function PaymentForm({ onBackToLanding }) {
     console.log('✅ Iniciando envio para webhook FIQon');
     console.log('📋 Dados a enviar:', JSON.stringify(payloadData, null, 2));
 
+    const webhookUrl = 'https://webhook.fiqon.app/webhook/019b328c-2f54-71dd-9f0c-9953ce65ce81/16e46e3a-a56e-4e05-b240-cf5fcb8c97f8';
     let webhookSuccess = false;
 
     try {
-      const response = await fetch('https://webhook.fiqon.app/webhook/019b328c-2f54-71dd-9f0c-9953ce65ce81/16e46e3a-a56e-4e05-b240-cf5fcb8c97f8', {
+      // Criar promessa de timeout (3 segundos máximo)
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout')), 3000)
+      );
+
+      // Criar promessa de envio do webhook
+      const fetchPromise = fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payloadData),
         mode: 'cors',
+        keepalive: true, // Mantém requisição mesmo após navegação
       });
+
+      // Usa Promise.race - quem responder primeiro ganha
+      const response = await Promise.race([fetchPromise, timeoutPromise]);
 
       console.log('📡 Status do FIQon webhook:', response.status);
       const responseText = await response.text();
@@ -120,23 +131,31 @@ export default function PaymentForm({ onBackToLanding }) {
       if (response.ok) {
         webhookSuccess = true;
         console.log('✅ Webhook enviado com sucesso!');
-      } else {
-        console.error('❌ Erro ao enviar webhook. Status:', response.status);
       }
     } catch (err) {
-      console.error('❌ Erro ao enviar para webhook FIQon:', err);
-      console.error('Erro detalhado:', {
-        message: err.message,
-        stack: err.stack,
-        type: err.name,
-      });
+      if (err.message === 'Timeout') {
+        console.warn('⏱️ Webhook demorou mais de 3s - usando fallback (sendBeacon)');
+      } else {
+        console.error('❌ Erro ao enviar webhook:', err.message);
+      }
+
+      // Fallback: usa sendBeacon (mais confiável para navegação)
+      if (navigator.sendBeacon) {
+        const blob = new Blob([JSON.stringify(payloadData)], { type: 'application/json' });
+        const beaconSent = navigator.sendBeacon(webhookUrl, blob);
+        
+        if (beaconSent) {
+          console.log('✅ Webhook enviado via sendBeacon (fallback)');
+          webhookSuccess = true;
+        } else {
+          console.error('❌ sendBeacon falhou - dados podem não ter sido enviados');
+        }
+      }
     }
 
-    // Aguardar um pouco para garantir que o envio foi processado
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Redirect para checkout
+    // Redirect para checkout (sempre redireciona, mesmo se webhook falhar)
     console.log('🔄 Redirecionando para checkout...');
+    console.log('📊 Status final do webhook:', webhookSuccess ? '✅ Enviado' : '⚠️ Pode não ter sido enviado');
     window.location.href = `${checkoutUrl}${emailParam}`;
   };
 
