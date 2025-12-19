@@ -36,10 +36,10 @@ export default function JoyExplosion({ trigger = false, onComplete = () => {} })
 
             {/* Pulso de luz */}
             <motion.div
-              initial={{ scale: 0.5, opacity: 1 }}
+              initial={{ scale: 0.5, opacity: 0.3 }}
               animate={{ scale: 2, opacity: 0 }}
-              transition={{ duration: 0.8 }}
-              className="absolute w-48 h-48 rounded-full bg-noel-cyan blur-3xl"
+              transition={{ duration: 0.5 }}
+              className="absolute w-32 h-32 rounded-full bg-noel-cyan/30"
             />
 
             {/* Partículas radiais */}
