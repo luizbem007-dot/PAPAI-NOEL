@@ -86,21 +86,42 @@ export default function PaymentForm({ onBackToLanding }) {
     const checkoutUrl = 'https://go.papainoeloficial.shop/pay/mensagem-do-papai-noel';
     const emailParam = formData.parentEmail ? `?email=${encodeURIComponent(formData.parentEmail)}` : '';
 
+    // Preparar dados para enviar
+    const payloadData = {
+      ...formData,
+      data_pedido: new Date().toISOString(),
+      status: 'Aguardando Pagamento',
+      timestamp: new Date().getTime(),
+    };
+
+    console.log('Enviando dados do formulário:', payloadData);
+
     try {
-      await fetch('https://hook.us2.make.com/5fotcnn5gupa13xpt83z19o9uf1nj8hb', {
+      // Enviar para Make.com
+      const makeResponse = await fetch('https://hook.us2.make.com/5fotcnn5gupa13xpt83z19o9uf1nj8hb', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          data_pedido: new Date().toISOString(),
-          status: 'Aguardando Pagamento',
-        }),
+        body: JSON.stringify(payloadData),
       });
+      console.log('Make.com response:', makeResponse.status);
     } catch (err) {
-      console.error('Erro ao enviar webhook (ignorado):', err);
-    } finally {
-      window.location.href = `${checkoutUrl}${emailParam}`;
+      console.error('Erro ao enviar para Make.com:', err);
     }
+
+    try {
+      // Enviar para FIQon webhook também
+      const fiqonResponse = await fetch('https://webhook.fiqon.app/webhook/019b328c-2f54-71dd-9f0c-9953ce65ce81/16e46e3a-a56e-4e05-b240-cf5fcb8c97f8', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payloadData),
+      });
+      console.log('FIQon response:', fiqonResponse.status);
+    } catch (err) {
+      console.error('Erro ao enviar para FIQon:', err);
+    }
+
+    // Redirect para checkout após enviar ambos os webhooks
+    window.location.href = `${checkoutUrl}${emailParam}`;
   };
 
   const currentFields = allFields.filter(f => f.step === currentStep);
