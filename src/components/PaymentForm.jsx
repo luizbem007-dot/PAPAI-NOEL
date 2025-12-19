@@ -109,7 +109,6 @@ export default function PaymentForm({ onBackToLanding }) {
     console.log('📊 Status final:', dataSaved ? '✅ Salvo no Supabase' : '⚠️ Verificar logs');
     window.location.href = `${checkoutUrl}${emailParam}`;
   };
-  };
 
   const currentFields = allFields.filter(f => f.step === currentStep);
   const allRequired = steps[currentStep].fields;
