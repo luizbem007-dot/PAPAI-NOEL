@@ -67,6 +67,15 @@ export default function PaymentForm({ onBackToLanding }) {
 
   const handleNext = () => {
     if (!validateCurrentStep()) return;
+    
+    // Rastrear evento "Continuar" nos pixels
+    if (typeof window.fbq !== 'undefined') {
+      window.fbq('track', 'Lead', {
+        step: currentStep + 1,
+        step_name: steps[currentStep].title
+      });
+    }
+    
     setShowJoy(true);
     setTimeout(() => setShowJoy(false), 800);
     setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
@@ -101,6 +110,18 @@ export default function PaymentForm({ onBackToLanding }) {
         
         // Rastrear conversão no TikTok (server-side tracking)
         await trackTikTokPurchase(formData);
+        
+        // Rastrear evento InitiateCheckout nos Meta Pixels
+        if (typeof window.fbq !== 'undefined') {
+          window.fbq('track', 'InitiateCheckout', {
+            content_name: 'Mensagem do Papai Noel',
+            content_category: 'Video Personalizado',
+            value: 29.90,
+            currency: 'BRL',
+            child_name: formData.childName,
+            child_age: formData.childAge
+          });
+        }
       } else {
         console.error('⚠️ Falha ao salvar no Supabase');
       }

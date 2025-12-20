@@ -11,6 +11,14 @@ export default function LandingPage({ onCTAClick, vslUrl }) {
   const navigate = useNavigate();
 
   const handleCTAClick = () => {
+    // Rastrear clique no CTA nos Meta Pixels
+    if (typeof window.fbq !== 'undefined') {
+      window.fbq('track', 'AddToCart', {
+        content_name: 'CTA - Criar Vídeo do Papai Noel',
+        content_category: 'Landing Page'
+      });
+    }
+    
     if (onCTAClick) onCTAClick();
     setTimeout(() => navigate('/checkout'), 600);
   };
