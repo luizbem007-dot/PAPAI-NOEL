@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, Sparkles, CheckCircle } from 'lucide-react';
 import JoyExplosion from './JoyExplosion';
 import { saveLeadToSupabase } from '../lib/supabase';
+import { trackTikTokPurchase } from '../lib/tiktok';
 
 export default function PaymentForm({ onBackToLanding }) {
   const navigate = useNavigate();
@@ -97,6 +98,9 @@ export default function PaymentForm({ onBackToLanding }) {
       
       if (dataSaved) {
         console.log('✅ Dados salvos no Supabase com sucesso!');
+        
+        // Rastrear conversão no TikTok (server-side tracking)
+        await trackTikTokPurchase(formData);
       } else {
         console.error('⚠️ Falha ao salvar no Supabase');
       }
