@@ -179,7 +179,7 @@ export default function LandingPage({ onCTAClick, vslUrl }) {
               onClick={handleCTAClick}
               className="mx-auto flex items-center justify-center gap-3 px-10 py-6 text-lg font-black rounded-full bg-gradient-to-r from-yellow-400 via-orange-400 to-orange-500 text-gray-900 shadow-[0_0_40px_rgba(255,215,0,0.6),0_0_80px_rgba(255,165,0,0.4)] hover:shadow-[0_0_60px_rgba(255,215,0,0.8),0_0_100px_rgba(255,165,0,0.6)] transition-all duration-300 border-2 border-yellow-300/40"
             >
-              ✨ Começar a Personalização
+              ✨ Criar Este Momento Inesquecível
             </motion.button>
           </motion.div>
         </div>
