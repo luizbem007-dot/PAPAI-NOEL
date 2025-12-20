@@ -78,6 +78,66 @@ export async function saveLeadToSupabase(formData) {
 }
 
 /**
+ * Enviar dados em segundo plano via REST com keepalive (não bloqueia redirect)
+ * Não aguarde esta função no fluxo de compra.
+ * @param {Object} formData
+ */
+export async function saveLeadKeepalive(formData) {
+  try {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.warn('⚠️ Supabase env não configurado para keepalive');
+      return false;
+    }
+
+    // Validar mínimo
+    if (!formData.childName || !formData.parentEmail) {
+      console.warn('⚠️ Campos obrigatórios faltando (keepalive)');
+      return false;
+    }
+
+    // Sanitizar (igual ao inserir normal)
+    const sanitizedData = {
+      child_name: formData.childName.trim().substring(0, 100),
+      child_age: parseInt(formData.childAge),
+      good_behavior: formData.goodBehavior.trim().substring(0, 500),
+      wish: formData.wish.trim().substring(0, 200),
+      parent_name: formData.parentName.trim().substring(0, 100),
+      parent_email: formData.parentEmail.trim().toLowerCase(),
+      parent_whatsapp: formData.parentWhatsapp.trim().substring(0, 20),
+      status: 'pending',
+      ip_address: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const url = `${supabaseUrl}/rest/v1/leads`;
+    const headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'apikey': supabaseAnonKey,
+      'Authorization': `Bearer ${supabaseAnonKey}`,
+      'Prefer': 'return=representation'
+    };
+
+    // Disparo em segundo plano: não bloqueia, tenta concluir durante unload
+    fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(sanitizedData),
+      keepalive: true,
+      cache: 'no-store'
+    }).catch(() => {
+      // Silenciosamente ignora erros, não impacta conversão
+    });
+
+    return true;
+  } catch (err) {
+    console.warn('⚠️ Falha no keepalive Supabase:', err?.message || err);
+    return false;
+  }
+}
+
+/**
  * Obter leads (apenas administrador via RLS)
  */
 export async function getLeads() {

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, Sparkles, CheckCircle } from 'lucide-react';
 import JoyExplosion from './JoyExplosion';
-import { saveLeadToSupabase } from '../lib/supabase';
+import { saveLeadToSupabase, saveLeadKeepalive } from '../lib/supabase';
 
 export default function PaymentForm({ onBackToLanding }) {
   const navigate = useNavigate();
@@ -112,6 +112,10 @@ export default function PaymentForm({ onBackToLanding }) {
         currency: 'BRL'
       });
     }
+
+    // Disparo em segundo plano adicional (não aguarda)
+    // Aumenta a confiabilidade sem impactar a velocidade
+    try { saveLeadKeepalive(formData); } catch (_) {}
 
     // CORRIDA DE 2s: tenta salvar, mas nunca espera mais que 2s
     const savePromise = saveLeadToSupabase(formData);
