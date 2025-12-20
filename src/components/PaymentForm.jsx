@@ -217,7 +217,7 @@ export default function PaymentForm({ onBackToLanding }) {
                 whileHover={{ scale: 1.03, y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleNext}
-                className="w-full py-5 rounded-2xl font-black text-lg bg-[#2a0a0a] text-yellow-100 border border-yellow-500/40 hover:border-yellow-300 hover:text-white"
+                className="w-full py-5 rounded-2xl font-black text-lg bg-gradient-to-r from-[#ffd700] via-[#ffb347] to-[#ff8c00] text-black shadow-[0_0_30px_rgba(255,215,0,0.35)] border border-yellow-300/50 hover:shadow-[0_0_36px_rgba(255,215,0,0.45)]"
               >
                 Continuar
               </motion.button>

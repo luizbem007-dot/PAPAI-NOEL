@@ -136,10 +136,6 @@ export default function LandingPage({ onCTAClick, vslUrl }) {
                         {step.description}
                       </p>
 
-                      {/* Seta decorativa */}
-                      <div className="pt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <span className="text-yellow-300 text-2xl">→</span>
-                      </div>
                     </div>
                   </div>
                 </motion.div>

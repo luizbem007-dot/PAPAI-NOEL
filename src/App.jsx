@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import LandingPage from './components/LandingPage';
-import PaymentForm from './components/PaymentForm';
 import PhaseTransition from './components/PhaseTransition';
-import SuccessPage from './components/SuccessPage';
-import CancelPage from './components/CancelPage';
+
+// Lazy carregamento para reduzir o tempo de entrada do checkout
+const LandingPage = lazy(() => import('./components/LandingPage'));
+const PaymentForm = lazy(() => import('./components/PaymentForm'));
+const SuccessPage = lazy(() => import('./components/SuccessPage'));
+const CancelPage = lazy(() => import('./components/CancelPage'));
 
 function AppContent() {
   const [showTransition, setShowTransition] = useState(false);
@@ -27,21 +29,29 @@ function AppContent() {
 
   return (
     <div className="w-full min-h-screen bg-gradient-noel overflow-x-hidden">
-      <AnimatePresence mode="wait">
-        <Routes>
-          <Route path="/" element={<LandingPage onCTAClick={handleCTAClick} />} />
-          <Route
-            path="/checkout"
-            element={
-              <PaymentForm
-                onBackToLanding={handleBackToLanding}
-              />
-            }
-          />
-          <Route path="/success" element={<SuccessPage />} />
-          <Route path="/cancel" element={<CancelPage />} />
-        </Routes>
-      </AnimatePresence>
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center text-yellow-100 bg-gradient-to-b from-[#1a0a0a] via-[#2a0a0a] to-[#0a0a0a]">
+            Carregando magia...
+          </div>
+        }
+      >
+        <AnimatePresence mode="wait">
+          <Routes>
+            <Route path="/" element={<LandingPage onCTAClick={handleCTAClick} />} />
+            <Route
+              path="/checkout"
+              element={
+                <PaymentForm
+                  onBackToLanding={handleBackToLanding}
+                />
+              }
+            />
+            <Route path="/success" element={<SuccessPage />} />
+            <Route path="/cancel" element={<CancelPage />} />
+          </Routes>
+        </AnimatePresence>
+      </Suspense>
 
       <PhaseTransition active={showTransition} />
     </div>
