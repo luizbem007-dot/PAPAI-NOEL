@@ -117,27 +117,11 @@ export default function PaymentForm({ onBackToLanding }) {
     // Aumenta a confiabilidade sem impactar a velocidade
     try { saveLeadKeepalive(formData); } catch (_) {}
 
-    // Simulação e métricas (DEV): permitir `?simDelay=1500` e logar tempo
-    const devStart = (typeof performance !== 'undefined') ? performance.now() : Date.now();
-    const params = new URLSearchParams(window.location.search);
-    const simDelayMs = parseInt(params.get('simDelay') || '0', 10);
-
     // CORRIDA DE 2s: tenta salvar, mas nunca espera mais que 2s
-    const savePromise = simDelayMs > 0
-      ? new Promise(resolve => setTimeout(resolve, simDelayMs))
-      : saveLeadToSupabase(formData);
-
-    const taggedSave = savePromise
-      .then(() => 'save')
-      .catch(() => 'save-error');
-    const taggedTimeout = new Promise(resolve => setTimeout(() => resolve('timeout'), 2000));
-
+    const savePromise = saveLeadToSupabase(formData);
+    const timeoutPromise = new Promise(resolve => setTimeout(resolve, 2000));
     try {
-      const winner = await Promise.race([taggedSave, taggedTimeout]);
-      if (import.meta.env?.DEV) {
-        const elapsed = Math.round(((typeof performance !== 'undefined') ? performance.now() : Date.now()) - devStart);
-        console.log(`[SubmitTiming] winner=${winner} elapsed=${elapsed}ms simDelay=${simDelayMs}`);
-      }
+      await Promise.race([savePromise, timeoutPromise]);
     } catch (_) {
       // Mesmo em erro, seguimos para o checkout
     }
