@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, Sparkles, CheckCircle } from 'lucide-react';
 import JoyExplosion from './JoyExplosion';
+import { saveLeadToSupabase } from '../lib/supabase';
 
 export default function PaymentForm({ onBackToLanding }) {
   const navigate = useNavigate();
@@ -88,7 +89,7 @@ export default function PaymentForm({ onBackToLanding }) {
     navigate('/');
   };
 
-  const handleFinalSubmit = () => {
+  const handleFinalSubmit = async () => {
     if (!validateCurrentStep()) return;
     setIsSubmitting(true);
 
@@ -112,7 +113,16 @@ export default function PaymentForm({ onBackToLanding }) {
       });
     }
 
-    // REDIRECT IMEDIATO - SEM ESPERAR NADA
+    // CORRIDA DE 2s: tenta salvar, mas nunca espera mais que 2s
+    const savePromise = saveLeadToSupabase(formData);
+    const timeoutPromise = new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      await Promise.race([savePromise, timeoutPromise]);
+    } catch (_) {
+      // Mesmo em erro, seguimos para o checkout
+    }
+
+    // REDIRECIONA APÓS SALVAR OU ESTOURAR TEMPO
     window.location.href = `${checkoutUrl}${emailParam}`;
   };
 
@@ -216,7 +226,7 @@ export default function PaymentForm({ onBackToLanding }) {
                 onClick={handleFinalSubmit}
                 className="w-full py-5 rounded-2xl font-black text-lg bg-gradient-to-r from-[#ffd700] via-[#ffb347] to-[#ff8c00] text-black shadow-[0_0_30px_rgba(255,215,0,0.35)] border border-yellow-300/50 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Processando...' : '✨ GERAR O VÍDEO EMOCIONANTE'}
+                {isSubmitting ? '✨ Criando seu vídeo incrível...' : '✨ GERAR O VÍDEO EMOCIONANTE'}
               </motion.button>
             ) : (
               <motion.button
