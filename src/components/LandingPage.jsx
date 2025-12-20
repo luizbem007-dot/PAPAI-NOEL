@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Sparkles, Wand2, ScrollText, ShieldCheck } from 'lucide-react';
@@ -8,6 +8,20 @@ import VSLPlayer from './VSLPlayer';
 import WhatsAppIcon from './WhatsAppIcon';
 
 export default function LandingPage({ onCTAClick, vslUrl }) {
+  // Carregar o script do vturb player dinamicamente
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://scripts.converteai.net/e57fed85-7f72-481f-b182-402ed86ecb6a/players/6946bdd725bdf7820c03c503/v4/player.js';
+    script.async = true;
+    document.head.appendChild(script);
+    
+    return () => {
+      // Cleanup
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
+    };
+  }, []);
   const navigate = useNavigate();
 
   const handleCTAClick = () => {
@@ -219,31 +233,13 @@ export default function LandingPage({ onCTAClick, vslUrl }) {
       <section className="relative py-12 px-4 bg-red-950/80">
         <div className="max-w-5xl mx-auto space-y-10 text-center">
           <div className="space-y-4">
-            <p className="text-sm uppercase tracking-[0.2em] text-yellow-300/70">Reações reais</p>
-            <h3 className="text-3xl font-bold">Passe para ver os reels de pais</h3>
+            <p className="text-sm uppercase tracking-[0.2em] text-yellow-300/70">Demonstração Real</p>
+            <h3 className="text-3xl font-bold">IMAGINE SEU FILHO RECEBENDO ISSO 🎅</h3>
+            <p className="text-lg text-yellow-200">Dê o play e assista ao vídeo que o Papai Noel gravou para o pequeno Abraão.</p>
           </div>
 
-          <div className="relative">
-            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 px-2">
-              {[1, 2, 3, 4, 5].map(item => (
-                <motion.div
-                  key={item}
-                  whileHover={{ scale: 1.02 }}
-                  className="snap-center shrink-0 w-48 sm:w-56 h-80 rounded-2xl border border-yellow-400/20 bg-gradient-to-b from-red-950/70 via-red-950/90 to-black/80 shadow-lg relative overflow-hidden"
-                >
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,215,0,0.2),transparent_45%),radial-gradient(circle_at_70%_80%,rgba(255,165,0,0.18),transparent_40%)]" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-14 h-14 rounded-full bg-white/90 text-noel-dark font-bold flex items-center justify-center shadow-lg">
-                      ▶
-                    </div>
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-red-950/90 to-transparent text-left">
-                    <p className="text-sm font-semibold">Depoimento {item}</p>
-                    <p className="text-xs text-yellow-200/70">Arraste para o lado para ver mais</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+          <div className="flex justify-center w-full">
+            <vturb-smartplayer id="vid-6946bdd725bdf7820c03c503" style={{ display: 'block', margin: '0 auto', width: '100%', maxWidth: '400px' }}></vturb-smartplayer>
           </div>
 
           <motion.button
