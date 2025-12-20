@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, Sparkles, CheckCircle } from 'lucide-react';
 import JoyExplosion from './JoyExplosion';
-import { saveLeadToSupabase } from '../lib/supabase';
-import { trackTikTokPurchase } from '../lib/tiktok';
 
 export default function PaymentForm({ onBackToLanding }) {
   const navigate = useNavigate();
@@ -77,7 +75,7 @@ export default function PaymentForm({ onBackToLanding }) {
     }
     
     setShowJoy(true);
-    setTimeout(() => setShowJoy(false), 800);
+    setShowJoy(false);
     setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
   };
 
@@ -87,7 +85,7 @@ export default function PaymentForm({ onBackToLanding }) {
 
   const handleBackClick = () => {
     if (onBackToLanding) onBackToLanding();
-    setTimeout(() => navigate('/'), 600);
+    navigate('/');
   };
 
   const handleFinalSubmit = () => {
