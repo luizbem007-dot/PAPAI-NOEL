@@ -90,48 +90,35 @@ export default function PaymentForm({ onBackToLanding }) {
     setTimeout(() => navigate('/'), 600);
   };
 
-  const handleFinalSubmit = async () => {
+  const handleFinalSubmit = () => {
     if (!validateCurrentStep()) return;
     setIsSubmitting(true);
 
     const checkoutUrl = 'https://go.papainoeloficial.shop/pay/mensagem-do-papai-noel';
     const emailParam = formData.parentEmail ? `?email=${encodeURIComponent(formData.parentEmail)}` : '';
 
-    console.log('✅ Iniciando salvamento de dados no Supabase');
-
-    let dataSaved = false;
-
-    try {
-      // Salvar dados no Supabase (seguro com RLS)
-      dataSaved = await saveLeadToSupabase(formData);
-      
-      if (dataSaved) {
-        console.log('✅ Dados salvos no Supabase com sucesso!');
-        
-        // Rastrear conversão no TikTok (server-side tracking)
-        await trackTikTokPurchase(formData);
-        
-        // Rastrear evento InitiateCheckout nos Meta Pixels
-        if (typeof window.fbq !== 'undefined') {
-          window.fbq('track', 'InitiateCheckout', {
-            content_name: 'Mensagem do Papai Noel',
-            content_category: 'Video Personalizado',
-            value: 29.90,
-            currency: 'BRL',
-            child_name: formData.childName,
-            child_age: formData.childAge
-          });
-        }
-      } else {
-        console.error('⚠️ Falha ao salvar no Supabase');
-      }
-    } catch (err) {
-      console.error('❌ Erro ao salvar:', err.message);
+    // Rastrear evento InitiateCheckout nos Meta Pixels ANTES de redirecionar
+    if (typeof window.fbq !== 'undefined') {
+      window.fbq('track', 'InitiateCheckout', {
+        content_name: 'Mensagem do Papai Noel',
+        content_category: 'Video Personalizado',
+        value: 29.90,
+        currency: 'BRL',
+        child_name: formData.childName,
+        child_age: formData.childAge
+      });
     }
 
-    // Sempre redireciona para checkout (dados já foram salvos ou tentativa foi feita)
+    // Salvar dados em background (não bloquear redirecionamento)
+    saveLeadToSupabase(formData).then(saved => {
+      if (saved) {
+        console.log('✅ Dados salvos no Supabase');
+        trackTikTokPurchase(formData).catch(err => console.warn('TikTok tracking falhou:', err));
+      }
+    }).catch(err => console.warn('Supabase save falhou:', err));
+
+    // REDIRECIONAR IMEDIATAMENTE (não esperar async)
     console.log('🔄 Redirecionando para checkout...');
-    console.log('📊 Status final:', dataSaved ? '✅ Salvo no Supabase' : '⚠️ Verificar logs');
     window.location.href = `${checkoutUrl}${emailParam}`;
   };
 
