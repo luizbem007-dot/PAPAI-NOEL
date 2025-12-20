@@ -97,7 +97,20 @@ export default function PaymentForm({ onBackToLanding }) {
     const checkoutUrl = 'https://go.papainoeloficial.shop/pay/mensagem-do-papai-noel';
     const emailParam = formData.parentEmail ? `?email=${encodeURIComponent(formData.parentEmail)}` : '';
 
-    // Rastrear evento InitiateCheckout nos Meta Pixels ANTES de redirecionar
+    // 1. SALVAR NO LOCALSTORAGE IMEDIATAMENTE (backup garantido)
+    try {
+      const leadData = {
+        ...formData,
+        timestamp: new Date().toISOString(),
+        status: 'pending'
+      };
+      localStorage.setItem('natal_last_lead', JSON.stringify(leadData));
+      console.log('✅ Backup local salvo');
+    } catch (e) {
+      console.warn('LocalStorage falhou:', e);
+    }
+
+    // 2. RASTREAR PIXELS ANTES DE REDIRECIONAR
     if (typeof window.fbq !== 'undefined') {
       window.fbq('track', 'InitiateCheckout', {
         content_name: 'Mensagem do Papai Noel',
@@ -109,15 +122,31 @@ export default function PaymentForm({ onBackToLanding }) {
       });
     }
 
-    // Salvar dados em background (não bloquear redirecionamento)
-    saveLeadToSupabase(formData).then(saved => {
-      if (saved) {
-        console.log('✅ Dados salvos no Supabase');
-        trackTikTokPurchase(formData).catch(err => console.warn('TikTok tracking falhou:', err));
-      }
-    }).catch(err => console.warn('Supabase save falhou:', err));
+    // 3. ENVIAR PARA WEBHOOK MAKE (backup primário - não espera resposta)
+    fetch('https://hook.us2.make.com/5fotcnn5gupa13xpt83z19o9uf1nj8hb', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...formData,
+        data_pedido: new Date().toISOString(),
+        status: 'Aguardando Pagamento',
+        source: 'checkout_form'
+      }),
+      keepalive: true // Garante envio mesmo após redirect
+    }).then(() => console.log('✅ Webhook Make enviado'))
+      .catch(err => console.warn('Webhook Make falhou:', err));
 
-    // REDIRECIONAR IMEDIATAMENTE (não esperar async)
+    // 4. SALVAR NO SUPABASE (background - não bloqueia)
+    saveLeadToSupabase(formData)
+      .then(saved => {
+        if (saved) {
+          console.log('✅ Supabase salvo');
+          trackTikTokPurchase(formData).catch(err => console.warn('TikTok tracking falhou:', err));
+        }
+      })
+      .catch(err => console.warn('Supabase falhou:', err));
+
+    // 5. REDIRECIONAR IMEDIATAMENTE
     console.log('🔄 Redirecionando para checkout...');
     window.location.href = `${checkoutUrl}${emailParam}`;
   };
