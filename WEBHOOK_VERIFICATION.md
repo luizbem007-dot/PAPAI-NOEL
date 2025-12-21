@@ -33,7 +33,7 @@
    - URL: `https://webhook.fiqon.app/webhook/019b328c-2f54-71dd-9f0c-9953ce65ce81/16e46e3a-a56e-4e05-b240-cf5fcb8c97f8`
 4. ✅ Aguarda resposta (500ms)
 5. ✅ Redireciona para checkout
-   - URL: `https://go.papainoeloficial.shop/pay/mensagem-do-papai-noel?email=...`
+   - URL: `https://pay.hotmart.com/Q103493089D?email=...`
 
 ## 🔍 Como Verificar
 

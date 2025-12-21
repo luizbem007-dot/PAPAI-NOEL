@@ -93,7 +93,7 @@ export default function PaymentForm({ onBackToLanding }) {
     if (!validateCurrentStep()) return;
     setIsSubmitting(true);
 
-    const checkoutUrl = 'https://clkdmg.site/pay/mensagem-do-papai-noel';
+    const checkoutUrl = 'https://pay.hotmart.com/Q103493089D';
     const emailParam = formData.parentEmail ? `?email=${encodeURIComponent(formData.parentEmail)}` : '';
 
     // BACKUP LOCAL INSTANTÂNEO (não bloqueia)
