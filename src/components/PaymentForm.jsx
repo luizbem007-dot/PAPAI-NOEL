@@ -113,20 +113,12 @@ export default function PaymentForm({ onBackToLanding }) {
       });
     }
 
-    // Disparo em segundo plano adicional (não aguarda)
-    // Aumenta a confiabilidade sem impactar a velocidade
+    // UMA ÚNICA REQUISIÇÃO: fire-and-forget com keepalive (não bloqueia redirect)
+    // Aumenta confiabilidade sem impactar velocidade
     try { saveLeadKeepalive(formData); } catch (_) {}
 
-    // CORRIDA DE 2s: tenta salvar, mas nunca espera mais que 2s
-    const savePromise = saveLeadToSupabase(formData);
-    const timeoutPromise = new Promise(resolve => setTimeout(resolve, 2000));
-    try {
-      await Promise.race([savePromise, timeoutPromise]);
-    } catch (_) {
-      // Mesmo em erro, seguimos para o checkout
-    }
-
-    // REDIRECIONA APÓS SALVAR OU ESTOURAR TEMPO
+    // REDIRECIONA IMEDIATAMENTE (sem esperar Supabase)
+    // Webhook será disparado pelo checkout, não aqui
     window.location.href = `${checkoutUrl}${emailParam}`;
   };
 

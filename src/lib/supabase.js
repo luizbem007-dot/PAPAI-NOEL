@@ -78,8 +78,10 @@ export async function saveLeadToSupabase(formData) {
 }
 
 /**
- * Enviar dados em segundo plano via REST com keepalive (não bloqueia redirect)
- * Não aguarde esta função no fluxo de compra.
+ * Salvar dados em segundo plano via REST com keepalive (não bloqueia redirect)
+ * ⚡ RÁPIDO: Não aguarda resposta, dispara e esquece
+ * ✅ CONFIÁVEL: keepalive garante entrega mesmo com unload
+ * Não aguarde esta função — ela é fire-and-forget por design
  * @param {Object} formData
  */
 export async function saveLeadKeepalive(formData) {
@@ -128,6 +130,7 @@ export async function saveLeadKeepalive(formData) {
       cache: 'no-store'
     }).catch(() => {
       // Silenciosamente ignora erros, não impacta conversão
+      console.log('📤 Lead disparado via keepalive (background)');
     });
 
     return true;
