@@ -104,9 +104,16 @@ export default function LandingPage({ onCTAClick, vslUrl }) {
               </div>
             </div>
             {/* Frase de prova social abaixo da CTA */}
-            <p className="text-yellow-100/90 text-sm font-medium">
-              ⭐⭐⭐⭐⭐ Presente #1 escolhido por milhares de mães em 2025
-            </p>
+            <div className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-yellow-900/20 via-amber-900/20 to-yellow-900/20 border border-yellow-500/30 backdrop-blur-sm">
+              <div className="flex gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} className="text-yellow-400 text-base">⭐</span>
+                ))}
+              </div>
+              <p className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-100 to-yellow-200 text-sm font-bold tracking-wide">
+                O presente #1 escolhido pelas mães em 2025
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -202,9 +209,16 @@ export default function LandingPage({ onCTAClick, vslUrl }) {
                   Garantia total
                 </div>
               </div>
-              <p className="text-yellow-100/90 text-sm font-medium">
-                ⭐⭐⭐⭐⭐ Presente #1 escolhido por milhares de mães em 2025
-              </p>
+              <div className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-yellow-900/20 via-amber-900/20 to-yellow-900/20 border border-yellow-500/30 backdrop-blur-sm">
+                <div className="flex gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} className="text-yellow-400 text-base">⭐</span>
+                  ))}
+                </div>
+                <p className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-100 to-yellow-200 text-sm font-bold tracking-wide">
+                  O presente #1 escolhido pelas mães em 2025
+                </p>
+              </div>
             </div>
           </motion.div>
         </div>
