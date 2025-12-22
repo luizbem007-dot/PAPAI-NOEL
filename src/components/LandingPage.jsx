@@ -104,8 +104,8 @@ export default function LandingPage({ onCTAClick, vslUrl }) {
               </div>
             </div>
             {/* Frase de prova social abaixo da CTA */}
-            <p className="text-yellow-100/90 text-sm">
-              ⭐⭐⭐⭐⭐ O presente #1 escolhido pelas mães em 2025
+            <p className="text-yellow-100/90 text-sm font-medium">
+              ⭐⭐⭐⭐⭐ Presente #1 escolhido por milhares de mães em 2025
             </p>
           </div>
         </div>
@@ -202,8 +202,8 @@ export default function LandingPage({ onCTAClick, vslUrl }) {
                   Garantia total
                 </div>
               </div>
-              <p className="text-yellow-100/90 text-sm">
-                ⭐⭐⭐⭐⭐ O presente #1 escolhido pelas mães em 2025
+              <p className="text-yellow-100/90 text-sm font-medium">
+                ⭐⭐⭐⭐⭐ Presente #1 escolhido por milhares de mães em 2025
               </p>
             </div>
           </motion.div>
