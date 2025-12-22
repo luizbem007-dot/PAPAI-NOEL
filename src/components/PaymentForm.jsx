@@ -104,14 +104,7 @@ export default function PaymentForm({ onBackToLanding }) {
       }));
     } catch (e) { /* ignora se falhar */ }
 
-    // PIXELS (síncronos, não bloqueiam)
-    if (typeof window.fbq !== 'undefined') {
-      window.fbq('track', 'InitiateCheckout', {
-        content_name: 'Mensagem do Papai Noel',
-        value: 29.90,
-        currency: 'BRL'
-      });
-    }
+    // Pixel de InitiateCheckout removido (será disparado no checkout externo)
 
     // UMA ÚNICA REQUISIÇÃO: fire-and-forget com keepalive (não bloqueia redirect)
     // Aumenta confiabilidade sem impactar velocidade
