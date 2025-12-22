@@ -86,14 +86,28 @@ export default function LandingPage({ onCTAClick, vslUrl }) {
             </p>
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.08, y: -2 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleCTAClick}
-            className="mx-auto flex items-center justify-center gap-3 px-8 py-5 text-lg font-black rounded-full bg-gradient-to-r from-yellow-400 via-orange-400 to-orange-500 text-gray-900 shadow-[0_0_40px_rgba(255,215,0,0.6),0_0_80px_rgba(255,165,0,0.4)] hover:shadow-[0_0_60px_rgba(255,215,0,0.8),0_0_100px_rgba(255,165,0,0.6)] transition-all duration-300"
-          >
-            ✨ CRIAR O VÍDEO MÁGICO AGORA
-          </motion.button>
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <motion.button
+                whileHover={{ scale: 1.08, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleCTAClick}
+                className="mx-auto flex items-center justify-center gap-3 px-8 py-5 text-lg font-black rounded-full bg-gradient-to-r from-yellow-400 via-orange-400 to-orange-500 text-gray-900 shadow-[0_0_40px_rgba(255,215,0,0.6),0_0_80px_rgba(255,165,0,0.4)] hover:shadow-[0_0_60px_rgba(255,215,0,0.8),0_0_100px_rgba(255,165,0,0.6)] transition-all duration-300"
+              >
+                ✨ CRIAR O VÍDEO MÁGICO AGORA
+              </motion.button>
+
+              {/* Selo de garantia ao lado da CTA */}
+              <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-emerald-500/15 border border-emerald-400/40 text-emerald-200 text-sm font-semibold">
+                <ShieldCheck className="w-4 h-4 text-emerald-300" />
+                Garantia total
+              </div>
+            </div>
+            {/* Frase de prova social abaixo da CTA */}
+            <p className="text-yellow-100/90 text-sm">
+              ⭐⭐⭐⭐⭐ O presente #1 escolhido pelas mães em 2025
+            </p>
+          </div>
         </div>
       </section>
 
@@ -173,14 +187,25 @@ export default function LandingPage({ onCTAClick, vslUrl }) {
             transition={{ delay: 0.6, duration: 0.6 }}
             className="mt-16 text-center"
           >
-            <motion.button
-              whileHover={{ scale: 1.08, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleCTAClick}
-              className="mx-auto flex items-center justify-center gap-3 px-10 py-6 text-lg font-black rounded-full bg-gradient-to-r from-yellow-400 via-orange-400 to-orange-500 text-gray-900 shadow-[0_0_40px_rgba(255,215,0,0.6),0_0_80px_rgba(255,165,0,0.4)] hover:shadow-[0_0_60px_rgba(255,215,0,0.8),0_0_100px_rgba(255,165,0,0.6)] transition-all duration-300 border-2 border-yellow-300/40"
-            >
-              ✨ Criar Este Momento Inesquecível
-            </motion.button>
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.08, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleCTAClick}
+                  className="mx-auto flex items-center justify-center gap-3 px-10 py-6 text-lg font-black rounded-full bg-gradient-to-r from-yellow-400 via-orange-400 to-orange-500 text-gray-900 shadow-[0_0_40px_rgba(255,215,0,0.6),0_0_80px_rgba(255,165,0,0.4)] hover:shadow-[0_0_60px_rgba(255,215,0,0.8),0_0_100px_rgba(255,165,0,0.6)] transition-all duration-300 border-2 border-yellow-300/40"
+                >
+                  ✨ Criar Este Momento Inesquecível
+                </motion.button>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-emerald-500/15 border border-emerald-400/40 text-emerald-200 text-sm font-semibold">
+                  <ShieldCheck className="w-4 h-4 text-emerald-300" />
+                  Garantia total
+                </div>
+              </div>
+              <p className="text-yellow-100/90 text-sm">
+                ⭐⭐⭐⭐⭐ O presente #1 escolhido pelas mães em 2025
+              </p>
+            </div>
           </motion.div>
         </div>
       </section>
