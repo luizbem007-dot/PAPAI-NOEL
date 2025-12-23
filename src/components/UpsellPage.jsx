@@ -87,9 +87,9 @@ export default function UpsellPage({ onCTAClick }) {
 
                   <div className="w-full max-w-2xl mx-auto overflow-hidden rounded-2xl border-2 border-white/20 shadow-xl">
                     <img
-                      src="https://placehold.co/800x500/1a0a0a/fbbf24?text=Manual+do+Sono+Infantil"
+                      src="/manual-sono-capa.svg"
                       alt="Manual do Sono Infantil - Edição de Férias"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain bg-gradient-to-br from-slate-900 to-slate-800"
                     />
                   </div>
 
