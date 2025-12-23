@@ -7,7 +7,6 @@ import PhaseTransition from './components/PhaseTransition';
 const LandingPage = lazy(() => import('./components/LandingPage'));
 const UpsellPage = lazy(() => import('./components/UpsellPage'));
 const PaymentForm = lazy(() => import('./components/PaymentForm'));
-const SuccessPage = lazy(() => import('./components/SuccessPage'));
 const CancelPage = lazy(() => import('./components/CancelPage'));
 
 function AppContent() {
@@ -49,7 +48,6 @@ function AppContent() {
                 />
               }
             />
-            <Route path="/success" element={<SuccessPage />} />
             <Route path="/cancel" element={<CancelPage />} />
           </Routes>
         </AnimatePresence>
