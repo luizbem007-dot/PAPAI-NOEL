@@ -37,69 +37,102 @@ export default function UpsellPage({ onCTAClick }) {
       </div>
 
       {/* Conteúdo central de upsell */}
-      <main className="relative w-full min-h-screen flex items-center justify-center px-4 py-16">
-        <div className="relative max-w-4xl w-full backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl shadow-2xl overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute -top-10 -left-10 w-48 h-48 bg-yellow-400/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 right-0 w-64 h-64 bg-yellow-400/15 rounded-full blur-3xl" />
+      <main className="relative w-full min-h-screen flex items-center justify-center px-4 py-20">
+        <div className="relative max-w-5xl w-full">
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className="absolute top-1/4 left-10 w-72 h-72 bg-emerald-400/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-20 right-10 w-80 h-80 bg-yellow-400/10 rounded-full blur-3xl" />
           </div>
 
-          <div className="relative z-10 p-8 sm:p-12 space-y-8 text-center">
-            <div className="space-y-3">
-              <p className="text-xs uppercase tracking-[0.3em] text-yellow-200/70 font-semibold">Upsell Exclusivo</p>
-              <h1 className="text-3xl sm:text-4xl font-black leading-tight bg-gradient-to-r from-noel-gold via-yellow-200 to-noel-gold bg-clip-text text-transparent">
-                ✅ TUDO CERTO! O vídeo do Papai Noel já está garantido e chegará no seu WhatsApp.
+          <div className="relative z-10 space-y-10">
+            {/* Headline de Sucesso */}
+            <div className="text-center space-y-4 px-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-400/40">
+                <span className="text-2xl">✅</span>
+                <span className="text-sm font-bold text-emerald-200 uppercase tracking-wider">Pedido Confirmado</span>
+              </div>
+              <h1 className="text-3xl sm:text-5xl font-black leading-tight">
+                <span className="text-white">O vídeo do Papai Noel</span>{' '}
+                <span className="bg-gradient-to-r from-emerald-300 via-emerald-200 to-yellow-300 bg-clip-text text-transparent">
+                  já está garantido!
+                </span>
               </h1>
-              <p className="text-lg text-yellow-100/90 leading-relaxed max-w-2xl mx-auto">
-                Mas atenção, mamãe: O Natal acaba amanhã, mas as Férias continuam... Como você vai fazer seu filho dormir no horário certo com toda essa agitação?
+              <p className="text-lg sm:text-xl text-yellow-100/80 max-w-2xl mx-auto">
+                Chegará no seu WhatsApp em instantes...
               </p>
             </div>
 
-            <div className="space-y-6">
-              <div className="flex items-center justify-center gap-3">
-                <div className="px-4 py-2 rounded-full bg-red-900/60 border border-yellow-400/30 text-sm font-semibold uppercase tracking-wide text-yellow-200/90">
-                  Oferta Única: MANUAL DO SONO INFANTIL - Edição de Férias
-                </div>
-              </div>
-
-              <div className="w-full max-w-3xl mx-auto overflow-hidden rounded-2xl border border-white/10 bg-black/30 shadow-inner shadow-yellow-500/10">
-                <img
-                  src="https://placehold.co/600x400"
-                  alt="Manual do Sono Infantil - Edição de Férias"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              <p className="text-lg text-yellow-50/90 leading-relaxed max-w-3xl mx-auto">
-                O guia prático para fazer seu filho dormir a noite toda e regular o sono nas férias, sem brigas e sem choro. Garanta noites de paz para você descansar.
-              </p>
-
-              <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-gradient-to-r from-green-500 via-emerald-500 to-green-500 text-gray-900 font-black text-lg shadow-[0_0_35px_rgba(16,185,129,0.55)]">
-                  <span className="text-sm line-through text-gray-900/70">De R$ 199,00</span>
-                  <span>|</span>
-                  <span>APENAS R$ 37,00</span>
-                  <span className="text-xs font-bold uppercase tracking-wide">(Oferta válida só nesta página)</span>
+            {/* Card de Oferta */}
+            <div className="backdrop-blur-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/20 rounded-3xl shadow-2xl overflow-hidden">
+              <div className="p-8 sm:p-12 space-y-8">
+                {/* Gancho */}
+                <div className="text-center space-y-3">
+                  <p className="text-sm uppercase tracking-widest text-yellow-300 font-bold">Mas espera...</p>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-white leading-tight">
+                    O Natal acaba, mas as <span className="text-yellow-300">Férias continuam...</span>
+                  </h2>
+                  <p className="text-lg text-yellow-50/90 leading-relaxed max-w-2xl mx-auto">
+                    Como você vai fazer seu filho dormir no horário certo com toda essa agitação?
+                  </p>
                 </div>
 
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -1 }}
-                  whileTap={{ scale: 0.96 }}
-                  onClick={handleUpsell}
-                  className="w-full sm:w-auto mx-auto flex items-center justify-center gap-3 px-10 py-5 text-lg font-black rounded-full bg-gradient-to-r from-emerald-400 via-green-400 to-emerald-500 text-gray-900 shadow-[0_20px_60px_rgba(16,185,129,0.45)] border-2 border-emerald-200/70 hover:shadow-[0_25px_75px_rgba(16,185,129,0.55)] transition-all duration-300"
-                >
-                  QUERO ADICIONAR AO MEU PEDIDO POR R$ 37
-                  <ArrowRight className="w-5 h-5" />
-                </motion.button>
-              </div>
+                {/* Produto */}
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <h3 className="text-xl sm:text-2xl font-black bg-gradient-to-r from-yellow-200 to-yellow-100 bg-clip-text text-transparent">
+                      MANUAL DO SONO INFANTIL
+                    </h3>
+                    <p className="text-sm text-yellow-300/80 uppercase tracking-wide mt-1">Edição de Férias</p>
+                  </div>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 text-sm text-yellow-100/80">
-                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-300/30">
-                  <ShieldCheck className="w-4 h-4 text-emerald-200" />
-                  Acesso imediato + garantia total
+                  <div className="w-full max-w-2xl mx-auto overflow-hidden rounded-2xl border-2 border-white/20 shadow-xl">
+                    <img
+                      src="https://placehold.co/800x500/1a0a0a/fbbf24?text=Manual+do+Sono+Infantil"
+                      alt="Manual do Sono Infantil - Edição de Férias"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  <p className="text-base sm:text-lg text-center text-yellow-50/90 leading-relaxed max-w-2xl mx-auto px-4">
+                    O guia prático para fazer seu filho <strong className="text-white">dormir a noite toda</strong> e regular o sono nas férias, <strong className="text-white">sem brigas e sem choro.</strong> Garanta noites de paz para você descansar.
+                  </p>
                 </div>
-                <div className="px-4 py-2 rounded-full bg-red-900/40 border border-yellow-400/30 font-semibold text-yellow-100">
-                  Oferta disponível apenas nesta página de obrigado
+
+                {/* Preço e CTA */}
+                <div className="space-y-6">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="flex items-baseline gap-3">
+                      <span className="text-lg text-gray-400 line-through">R$ 199,00</span>
+                      <span className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-emerald-300 to-green-400 bg-clip-text text-transparent">
+                        R$ 37,00
+                      </span>
+                    </div>
+                    <div className="px-4 py-1.5 rounded-full bg-red-500/20 border border-red-400/40">
+                      <span className="text-xs font-bold text-red-200 uppercase tracking-wider">Oferta válida só nesta página</span>
+                    </div>
+                  </div>
+
+                  <motion.button
+                    whileHover={{ scale: 1.03, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleUpsell}
+                    className="w-full max-w-xl mx-auto flex items-center justify-center gap-3 px-8 py-6 text-base sm:text-lg font-black rounded-2xl bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 text-gray-900 shadow-[0_20px_60px_rgba(16,185,129,0.5)] hover:shadow-[0_25px_80px_rgba(16,185,129,0.6)] transition-all duration-300"
+                  >
+                    <span>ADICIONAR AO PEDIDO POR R$ 37</span>
+                    <ArrowRight className="w-6 h-6" />
+                  </motion.button>
+
+                  <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
+                    <div className="flex items-center gap-2 text-emerald-200">
+                      <ShieldCheck className="w-5 h-5" />
+                      <span>Acesso imediato</span>
+                    </div>
+                    <span className="text-white/40">•</span>
+                    <div className="flex items-center gap-2 text-emerald-200">
+                      <ShieldCheck className="w-5 h-5" />
+                      <span>Garantia total</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
