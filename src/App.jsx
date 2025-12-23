@@ -5,6 +5,7 @@ import PhaseTransition from './components/PhaseTransition';
 
 // Lazy carregamento para reduzir o tempo de entrada do checkout
 const LandingPage = lazy(() => import('./components/LandingPage'));
+const UpsellPage = lazy(() => import('./components/UpsellPage'));
 const PaymentForm = lazy(() => import('./components/PaymentForm'));
 const SuccessPage = lazy(() => import('./components/SuccessPage'));
 const CancelPage = lazy(() => import('./components/CancelPage'));
@@ -39,6 +40,7 @@ function AppContent() {
         <AnimatePresence mode="wait">
           <Routes>
             <Route path="/" element={<LandingPage onCTAClick={handleCTAClick} />} />
+            <Route path="/upsell" element={<UpsellPage onCTAClick={handleCTAClick} />} />
             <Route
               path="/checkout"
               element={
