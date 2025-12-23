@@ -87,9 +87,9 @@ export default function UpsellPage({ onCTAClick }) {
 
                   <div className="w-full max-w-2xl mx-auto overflow-hidden rounded-2xl border-2 border-white/20 shadow-xl">
                     <img
-                      src="/manual-sono-capa.svg"
+                       src="https://res.cloudinary.com/dfnhbhkhp/image/upload/v1766516577/freepik__produto-ebook-manual-do-sono-infantil-edio-de-fria__20296_lulrh1.jpg"
                       alt="Manual do Sono Infantil - Edição de Férias"
-                      className="w-full h-full object-contain bg-gradient-to-br from-slate-900 to-slate-800"
+                       className="w-full h-full object-cover"
                     />
                   </div>
 
