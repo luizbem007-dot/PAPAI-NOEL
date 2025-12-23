@@ -1,13 +1,10 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Sparkles, ShieldCheck, ArrowRight } from 'lucide-react';
 import MagicalParticles from './MagicalParticles';
 import SnowEffect from './SnowEffect';
 
 export default function UpsellPage({ onCTAClick }) {
-  const navigate = useNavigate();
-
   const handleUpsell = () => {
     if (typeof window.fbq !== 'undefined') {
       window.fbq('track', 'AddToCart', {
@@ -16,11 +13,7 @@ export default function UpsellPage({ onCTAClick }) {
       });
     }
 
-    if (onCTAClick) {
-      onCTAClick();
-    }
-
-    navigate('/checkout');
+    window.location.href = 'https://pay.kiwify.com.br/hOpOuCz';
   };
 
   return (
